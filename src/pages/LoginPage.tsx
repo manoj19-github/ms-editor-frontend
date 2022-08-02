@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidV4 } from "uuid";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const focusInputRef: any = useRef(null);
   const [roomId, setRoomId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+  const navigate = useNavigate();
+
   useEffect(() => {
     focusInputRef.current.focus();
   }, []);
@@ -12,6 +15,13 @@ const LoginPage = () => {
     const _roomId = uuidV4();
     setRoomId(_roomId);
     toast.success("New room Successfully created");
+  };
+  const goToEditor = () => {
+    if (!userName || !roomId) {
+      toast.error("please enter the room ID & and user name ");
+      return;
+    }
+    navigate(`/editor/${roomId}`);
   };
   return (
     <div className="h-[100vh] overflow-hidden w-full bg-slate-900 text-white flex flex-col justify-center items-center box-border">
@@ -46,7 +56,8 @@ const LoginPage = () => {
           </div>
           <div className="flex justify-end items-center mt-5 md:mt-0">
             <button
-              type="submit"
+              type="button"
+              onClick={goToEditor}
               className="w-full md:w-[7rem] bg-slate-900 p-2 rounded-md hover:shadow-2xl hover:bg-slate-500 duration-300 ease-in "
             >
               Join
