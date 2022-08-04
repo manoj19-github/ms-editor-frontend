@@ -21,7 +21,12 @@ const LoginPage = () => {
       toast.error("please enter the room ID & and user name ");
       return;
     }
-    navigate(`/editor/${roomId}`);
+    navigate(`/editor/${roomId}`, { state: { userName } });
+  };
+  const onKeyEnterFunc = (e: any) => {
+    if (e.code === "Enter") {
+      goToEditor();
+    }
   };
   return (
     <div className="h-[100vh] overflow-hidden w-full bg-slate-900 text-white flex flex-col justify-center items-center box-border">
@@ -49,6 +54,7 @@ const LoginPage = () => {
             <input
               type="text"
               value={userName}
+              onKeyUp={onKeyEnterFunc}
               onChange={(e: any) => setUserName(e.target.value)}
               placeholder="User Name"
               className="w-full p-1 text-slate-200 bg-slate-900 outline-none border-0 h-8 rounded-md"

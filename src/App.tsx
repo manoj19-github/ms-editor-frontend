@@ -25,13 +25,21 @@ function App() {
           // Default options for specific types
           success: {
             duration: 3000,
+            style: {
+              background: "green",
+              color: "#fff",
+            },
             theme: {
-              primary: "#131413",
+              primary: "green",
               secondary: "black",
             },
           },
           error: {
             duration: 3000,
+            style: {
+              background: "red",
+              color: "#fff",
+            },
             theme: {
               primary: "red",
               secondary: "black",

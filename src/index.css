@@ -2,3 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+/* width */
+::-webkit-scrollbar {
+    width: 1rem;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #131413;
+  }
+  
+  /* Handle on hover */
