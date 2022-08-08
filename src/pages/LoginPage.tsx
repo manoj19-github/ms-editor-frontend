@@ -21,7 +21,7 @@ const LoginPage = () => {
       toast.error("please enter the room ID & and user name ");
       return;
     }
-    navigate(`/editor/${roomId}`, { state: { userName } });
+    navigate(`/editor/${roomId}/${userName}`);
   };
   const onKeyEnterFunc = (e: any) => {
     if (e.code === "Enter") {

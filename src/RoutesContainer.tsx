@@ -7,7 +7,7 @@ const RoutesContainer = () => {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/editor/:roomId" element={<EditorsPage />} />
+      <Route path="/editor/:roomId/:userName" element={<EditorsPage />} />
     </Routes>
   );
 };
