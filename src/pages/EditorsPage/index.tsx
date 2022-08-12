@@ -7,6 +7,7 @@ import { MdDoubleArrow } from "react-icons/md";
 import Client from "../../components/Client";
 import MyEditor from "./MyEditor";
 import EditorSideBar from "./EditorSideBar";
+import { v4 as uuidV4 } from "uuid";
 import LangSelect from "./LangSelect";
 import { ILangOption, ITheme } from "../../interfaces/Ilang.interface";
 import { initSocket } from "../../utils/initSocket";
@@ -22,6 +23,7 @@ import toast from "react-hot-toast";
 const EditorsPage = () => {
   const socketRef = useRef<any>(null);
   const { roomId, userName } = useParams();
+
   const location = useLocation();
   const navigate = useNavigate();
   const [showSlides, setShowSlides] = useState<boolean>(true);
