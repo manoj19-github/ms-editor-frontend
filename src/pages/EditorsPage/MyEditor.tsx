@@ -92,7 +92,7 @@ const MyEditor = ({
       <div className=" w-full px-5 flex justify-between items-center pt-1 ">
         <div className="flex space-x-2 items-center">
           <p className="text-white">Language : </p>
-          <LangSelect onSelectChange={handleLangChange} />
+          <LangSelect onSelectChange={handleLangChange} langId={myLang.id} />
         </div>
         <div className="flex space-x-2 items-center">
           <p className="text-white">Theme : </p>

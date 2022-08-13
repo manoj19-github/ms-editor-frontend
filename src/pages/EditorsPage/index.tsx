@@ -20,12 +20,19 @@ import {
 } from "react-router-dom";
 import toast from "react-hot-toast";
 import { IClients } from "../../interfaces/socket.interface";
+import { stringify } from "querystring";
 
-var socketRef: any;
+// var socketRef.current: any;
 const EditorsPage = () => {
   const myFlagRef = useRef<boolean>(false);
+  const socketRef = useRef<any>();
 
   const { roomId, userName } = useParams();
+  const removeSocket = () => {
+    socketRef.current.off(SOCKET_ACTIONS.JOINED);
+    socketRef.current.off(SOCKET_ACTIONS.DISCONNECTED);
+    socketRef.current.disconnect();
+  };
   const [clientsData, setClientsData] = useState<IClients[]>([]);
   const uniqueId = uuidV4();
   const uniqueUserName = `${userName}-${uniqueId}`;
@@ -55,6 +62,7 @@ const EditorsPage = () => {
       window.removeEventListener("resize", showMobile);
     };
   }, [window.innerWidth]);
+
   useEffect(() => {
     const hadleErrors = (err: any) => {
       console.log("connection failed : ", err);
@@ -62,22 +70,22 @@ const EditorsPage = () => {
       navigate("/");
     };
     const setSocket = async () => {
-      socketRef = await initSocket();
-      socketRef.emit(SOCKET_ACTIONS.CLIENT_UP, {
+      socketRef.current = await initSocket();
+      socketRef.current.emit(SOCKET_ACTIONS.CLIENT_UP, {
         message: `client is up roomId:${roomId} `,
       });
-      socketRef.on(
+      socketRef.current.on(
         SOCKET_ACTIONS.SERVER_UP,
         ({ message }: { message: string }) => {
           console.log("socket_message : ", message);
         }
       );
-      socketRef.emit(SOCKET_ACTIONS.JOIN, {
+      socketRef.current.emit(SOCKET_ACTIONS.JOIN, {
         roomId,
         userName: uniqueUserName,
       });
-      socketRef.on("connection_failed", (err: any) => hadleErrors(err));
-      socketRef.on(
+      socketRef.current.on("connection_failed", (err: any) => hadleErrors(err));
+      socketRef.current.on(
         SOCKET_ACTIONS.JOINED,
         ({
           _userName,
@@ -101,26 +109,63 @@ const EditorsPage = () => {
           console.log("clients data : ", clients);
         }
       );
+      socketRef.current.on(
+        SOCKET_ACTIONS.CODE_CHANGED,
+        ({ myCode, _userName }: { myCode: string; _userName: string }) => {
+          if (_userName !== uniqueUserName) {
+            setMyCode(myCode);
+            console.log("my code sync : ", myCode);
+          }
+        }
+      );
+      socketRef.current.on(
+        SOCKET_ACTIONS.LANG_CHANGED,
+        ({
+          newLang,
+          _userName,
+        }: {
+          newLang: ILangOption;
+          _userName: string;
+        }) => {
+          if (_userName !== uniqueUserName) {
+            toast.success(`Language changed by ${_userName.split("-")[0]}`);
+            setMyLang(newLang);
+          }
+        }
+      );
+      socketRef.current.on(
+        SOCKET_ACTIONS.DISCONNECTED,
+        ({ socketId, _userName }: { socketId: string; _userName: string }) => {
+          toast.success(`${_userName.split("-")[0]} left the room`);
+          setClientsData((prev: IClients[]) => {
+            return prev.filter(
+              (_client: IClients) => _client.socketId !== socketId
+            );
+          });
+        }
+      );
     };
     setSocket();
   }, []);
-  // useEffect(() => {
-  //   socketRef.on(
-  //     SOCKET_ACTIONS.JOINED,
-  //     ({
-  //       userName,
-  //       clients,
-  //       socketId,
-  //     }: {
-  //       userName: string;
-  //       clients: IClients[];
-  //       socketId: string;
-  //     }) => {
-  //       setClientsData(clients);
-  //       console.log("clients data : ", clients);
-  //     }
-  //   );
-  // }, [clientsData]);
+  const onChangeMyCode = async (value: string) => {
+    setMyCode(value);
+    socketRef.current.emit(SOCKET_ACTIONS.SYNC_CODE, {
+      myCode: value,
+      _userName: uniqueUserName,
+      roomId,
+    });
+  };
+  const onLangChange = (newLang: ILangOption) => {
+    setMyLang(newLang);
+    socketRef.current.emit(SOCKET_ACTIONS.LANG_CHANGING, {
+      newLang,
+      _userName: uniqueUserName,
+      roomId,
+    });
+  };
+  //  useEffect(()=>{
+  //   return ()=>removeSocket();
+  //  },[])
 
   if (!roomId || !userName) return <Navigate to="/" />;
 
@@ -131,6 +176,7 @@ const EditorsPage = () => {
         showSlides={showSlides}
         clientsData={clientsData}
         uniqueUserName={uniqueUserName}
+        removeMySocket={removeSocket}
       />
       <div className="min-w-screen min-h-screen overflow-hidden w-full  md:ml-[16.6vw] ml-2 mt-16 md:mt-0 ">
         {isMobileView && (
@@ -151,9 +197,9 @@ const EditorsPage = () => {
         )}
         <MyEditor
           myLang={myLang}
-          setMyLang={setMyLang}
+          setMyLang={onLangChange}
           myCode={myCode}
-          setMyCode={setMyCode}
+          setMyCode={onChangeMyCode}
           myTheme={myTheme}
           setMyTheme={setMyTheme}
         />

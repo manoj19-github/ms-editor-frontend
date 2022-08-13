@@ -4,7 +4,7 @@ import { customStyles } from "../../Constants/CustomStyles";
 import { languageOptions } from "../../Constants/LangOptions";
 import { ILangOption } from "../../interfaces/Ilang.interface";
 
-const LangSelect = ({ onSelectChange }: ILangSelect) => {
+const LangSelect = ({ onSelectChange, langId }: ILangSelect) => {
   return (
     <select
       placeholder={`select your lang`}
@@ -12,7 +12,12 @@ const LangSelect = ({ onSelectChange }: ILangSelect) => {
       onChange={(e: any) => onSelectChange(e.target.value)}
     >
       {languageOptions.map((lang: ILangOption, index: number) => (
-        <option value={lang.value} key={index} className="p-1">
+        <option
+          value={lang.value}
+          key={index}
+          className="p-1"
+          selected={langId === lang.id}
+        >
           {lang.label}
         </option>
       ))}
@@ -21,6 +26,7 @@ const LangSelect = ({ onSelectChange }: ILangSelect) => {
 };
 interface ILangSelect {
   onSelectChange: any;
+  langId: number;
 }
 
 export default LangSelect;
