@@ -45,7 +45,7 @@ const LoginPage = () => {
               type="text"
               placeholder="Room ID"
               value={roomId}
-              onChange={(e: any) => setRoomId(e.target.vallue)}
+              onChange={(e: any) => setRoomId(e.target.value)}
               ref={focusInputRef}
               className="w-full p-1 text-slate-200 bg-slate-900 outline-none border-0 h-8 rounded-md"
             />

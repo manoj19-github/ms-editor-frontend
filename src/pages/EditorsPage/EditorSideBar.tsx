@@ -5,8 +5,16 @@ import { MdPersonRemoveAlt1 } from "react-icons/md";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { MdDoubleArrow } from "react-icons/md";
 import Client from "../../components/Client";
+import { IClients } from "../../interfaces/socket.interface";
 
-const EditorSideBar = ({ showSlides, isMobileView }: IEditorSidebar) => {
+const EditorSideBar = ({
+  showSlides,
+  isMobileView,
+  clientsData,
+  uniqueUserName,
+}: IEditorSidebar) => {
+  console.log("client s data : ", clientsData);
+  console.log("unique : ", uniqueUserName);
   return (
     <div
       className={`flex flex-col md:w-1/6 w-1/2 duration-500 ease-in-out  fixed h-screen z-[500] ${
@@ -21,25 +29,21 @@ const EditorSideBar = ({ showSlides, isMobileView }: IEditorSidebar) => {
             alt="client"
           />
         </div>
-        <div className="w-full grid grid-flow-row grid-cols-1 gap-y-10 gap-x-2 h-[60%]  overflow-auto">
-          <Client username={"Manoj Santraffffffffffffffffffffffffffff"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
-          <Client username={"Manoj Santra"} />
+        <div className="w-full flex flex-col items-center justify-start   h-[60%]  overflow-auto">
+          {!!clientsData &&
+            clientsData
+              .filter(({ isMe }) => isMe === true)
+              .map(({ userName, isMe, socketId }) => (
+                <Client username={userName} isMe={isMe} key={socketId} />
+              ))}
+          {!!clientsData &&
+            clientsData
+              .filter(({ isMe }) => isMe === false)
+              .map(({ userName, isMe, socketId }) => (
+                <Client username={userName} isMe={isMe} key={socketId} />
+              ))}
         </div>
+
         <div className="w-full mt-[25%] md:mt-4 md:p-2 flex md:flex-col md:space-y-5 items-center justify-around md:justify-center ">
           <button className="bg-slate-400 w-10 md:w-[90%] flex justify-center p-1  hover:bg-slate-700 h-7 items-center md:h-8  rounded-md text-white font-bold duration-500 ease-in  ">
             {isMobileView ? <BiCopyAlt /> : "Copy Room ID"}
@@ -55,6 +59,8 @@ const EditorSideBar = ({ showSlides, isMobileView }: IEditorSidebar) => {
 interface IEditorSidebar {
   showSlides: boolean;
   isMobileView: boolean;
+  clientsData: IClients[];
+  uniqueUserName: string;
 }
 
 export default EditorSideBar;
