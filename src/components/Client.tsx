@@ -21,7 +21,7 @@ const Client = ({ username, isMe }: IClient) => {
     return myname;
   };
   return (
-    <div className="flex flex-col  items-center justify-center w-full my-4">
+    <div className="flex flex-col  items-center justify-center w-full my-1">
       <Avatar name={username} size="3rem" round={true} />
       <p className="w-full mt-1 text-[#334155] text-center">
         {isMe ? "You" : showName(username)}

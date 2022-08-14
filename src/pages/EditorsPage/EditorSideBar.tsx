@@ -31,7 +31,7 @@ const EditorSideBar = ({
             alt="client"
           />
         </div>
-        <div className="w-full flex flex-col items-center justify-start   h-[60%]  overflow-auto">
+        <div className="w-full flex flex-col items-center justify-center   h-[60%]   overflow-auto">
           {!!clientsData &&
             clientsData
               .filter(({ isMe }) => isMe === true)
