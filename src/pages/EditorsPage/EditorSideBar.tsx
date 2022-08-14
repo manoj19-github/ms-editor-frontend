@@ -14,6 +14,7 @@ const EditorSideBar = ({
   clientsData,
   uniqueUserName,
   removeMySocket,
+  copyRoomId,
 }: IEditorSidebar) => {
   console.log("client s data : ", clientsData);
   console.log("unique : ", uniqueUserName);
@@ -48,7 +49,10 @@ const EditorSideBar = ({
         </div>
 
         <div className="w-full mt-[25%] md:mt-4 md:p-2 flex md:flex-col md:space-y-5 items-center justify-around md:justify-center ">
-          <button className="bg-slate-400 w-10 md:w-[90%] flex justify-center p-1  hover:bg-slate-700 h-7 items-center md:h-8  rounded-md text-white font-bold duration-500 ease-in  ">
+          <button
+            onClick={copyRoomId}
+            className="bg-slate-400 w-10 md:w-[90%] flex justify-center p-1  hover:bg-slate-700 h-7 items-center md:h-8  rounded-md text-white font-bold duration-500 ease-in  "
+          >
             {isMobileView ? <BiCopyAlt /> : "Copy Room ID"}
           </button>
           <button
@@ -68,6 +72,7 @@ interface IEditorSidebar {
   clientsData: IClients[];
   uniqueUserName: string;
   removeMySocket: any;
+  copyRoomId: any;
 }
 
 export default EditorSideBar;
