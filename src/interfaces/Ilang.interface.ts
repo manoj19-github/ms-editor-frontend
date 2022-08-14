@@ -3,6 +3,8 @@
     name:string;
     label:string;
     value:string;
+    format:string;
+    compilerId:number;
   }
  export  interface ITheme{
     label:string;

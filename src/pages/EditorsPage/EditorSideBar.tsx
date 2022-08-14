@@ -16,8 +16,6 @@ const EditorSideBar = ({
   removeMySocket,
   copyRoomId,
 }: IEditorSidebar) => {
-  console.log("client s data : ", clientsData);
-  console.log("unique : ", uniqueUserName);
   const navigate = useNavigate();
   return (
     <div

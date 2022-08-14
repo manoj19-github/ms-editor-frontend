@@ -3,6 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import RoutesContainer from "./RoutesContainer";
 import { Toaster } from "react-hot-toast";
+import "@coreui/coreui/dist/css/coreui.min.css";
 
 function App() {
   return (

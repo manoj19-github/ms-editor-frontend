@@ -6,6 +6,7 @@ import EditorsPage from "./pages/EditorsPage";
 const RoutesContainer = () => {
   return (
     <Routes>
+      <Route path="/:roomId" element={<LoginPage />} />
       <Route path="/" element={<LoginPage />} />
       <Route path="/editor/:roomId/:userName" element={<EditorsPage />} />
     </Routes>

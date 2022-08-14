@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidV4 } from "uuid";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 const LoginPage = () => {
   const focusInputRef: any = useRef(null);
   const [roomId, setRoomId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const navigate = useNavigate();
+  const { roomId: roomIdParams } = useParams();
 
   useEffect(() => {
     focusInputRef.current.focus();
-  }, []);
+    !!roomIdParams && setRoomId(roomIdParams);
+  }, [roomIdParams]);
   const createRandomRoomId = (): void => {
     const _roomId = uuidV4();
     setRoomId(_roomId);
@@ -48,6 +50,7 @@ const LoginPage = () => {
               onChange={(e: any) => setRoomId(e.target.value)}
               ref={focusInputRef}
               className="w-full p-1 text-slate-200 bg-slate-900 outline-none border-0 h-8 rounded-md"
+              readOnly={true}
             />
           </div>
           <div className="flex flex-col space-y-2">

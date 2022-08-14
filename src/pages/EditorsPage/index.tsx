@@ -12,6 +12,7 @@ import LangSelect from "./LangSelect";
 import { ILangOption, ITheme } from "../../interfaces/Ilang.interface";
 import { initSocket } from "../../utils/initSocket";
 import { SOCKET_ACTIONS } from "../../utils/socketAction";
+import compileCodeService from "../../services";
 import {
   useLocation,
   useParams,
@@ -20,20 +21,25 @@ import {
 } from "react-router-dom";
 import toast from "react-hot-toast";
 import { IClients } from "../../interfaces/socket.interface";
-
-// var socketRef.current: any;
+import CompilerModal from "../../components/CompilerModal";
+import { ICompilerResult } from "../../interfaces/compilerResult.interface";
 const EditorsPage = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [result, setResult] = useState<ICompilerResult>();
   const [myLang, setMyLang] = useState<ILangOption>({
     id: 63,
     name: "JavaScript (Node.js 12.14.0)",
     label: "JavaScript (Node.js 12.14.0)",
     value: "javascript",
+    format: "js",
+    compilerId: 17,
   });
   const [myTheme, setMyTheme] = useState<ITheme>({
     label: "",
     value: "",
   });
   const [myCode, setMyCode] = useState<string>("");
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const socketRef = useRef<any>();
   const codeRef = useRef<any>();
   const langRef = useRef<ILangOption>(myLang);
@@ -41,10 +47,6 @@ const EditorsPage = () => {
   const { roomId, userName } = useParams();
   const removeSocket = () => {
     socketRef.current.off(SOCKET_ACTIONS.JOINED);
-    // socketRef.current.emit(SOCKET_ACTIONS.LEAVE, {
-    //   roomId,
-    //   _userName: uniqueUserName,
-    // });
     socketRef.current.disconnect();
   };
   const [clientsData, setClientsData] = useState<IClients[]>([]);
@@ -100,27 +102,29 @@ const EditorsPage = () => {
           clients: IClients[];
           socketId: string;
         }) => {
-          console.log("username : ", uniqueUserName, _userName);
-
-          if (uniqueUserName !== _userName) {
-            socketRef.current.emit(SOCKET_ACTIONS.SYNC_CODE, {
-              myCode: codeRef.current,
-              _userName: uniqueUserName,
-              roomId,
-            });
-            socketRef.current.emit(SOCKET_ACTIONS.LANG_CHANGING, {
-              newLang: langRef.current,
-              _userName: uniqueUserName,
-              roomId,
-            });
-            toast.success(`${_userName.split("-")[0]} is joind the room`);
+          let flag: boolean = false;
+          if (!flag) {
+            if (uniqueUserName !== _userName) {
+              socketRef.current.emit(SOCKET_ACTIONS.SYNC_CODE, {
+                myCode: codeRef.current,
+                _userName: uniqueUserName,
+                roomId,
+              });
+              socketRef.current.emit(SOCKET_ACTIONS.LANG_CHANGING, {
+                newLang: langRef.current,
+                _userName: uniqueUserName,
+                roomId,
+              });
+              toast.success(`${_userName.split("-")[0]} is joind the room`);
+            }
+            setClientsData(
+              clients?.map((_client) => ({
+                ..._client,
+                isMe: uniqueUserName === _client.userName,
+              }))
+            );
+            flag = true;
           }
-          setClientsData(
-            clients?.map((_client) => ({
-              ..._client,
-              isMe: uniqueUserName === _client.userName,
-            }))
-          );
         }
       );
       socketRef.current.on(
@@ -129,7 +133,6 @@ const EditorsPage = () => {
           if (_userName !== uniqueUserName) {
             setMyCode(myCode);
             codeRef.current = myCode;
-            console.log("my code sync : ", myCode);
           }
         }
       );
@@ -149,19 +152,15 @@ const EditorsPage = () => {
           }
         }
       );
-      // socketRef.current.on(
-      //   SOCKET_ACTIONS.DISCONNECTED,
-      //   ({ socketId, _userName }: { socketId: string; _userName: string }) => {
-      //     if (_userName !== uniqueUserName) {
-      //       toast.success(`${_userName.split("-")[0]} left the room`);
-      //       setClientsData((prev: IClients[]) => {
-      //         return prev.filter(
-      //           (_client: IClients) => _client.socketId !== socketId
-      //         );
-      //       });
-      //     }
-      //   }
-      // );
+      socketRef.current.on(
+        SOCKET_ACTIONS.COMPILING,
+        ({ _userName }: { _userName: string }) => {
+          if (_userName !== uniqueUserName) {
+            toast.success(`code compiling by ${_userName.split("-")[0]}`);
+            onCompiledCodes(false);
+          }
+        }
+      );
     };
     setSocket();
   }, []);
@@ -189,23 +188,62 @@ const EditorsPage = () => {
   // copy the room id
   const copyRoomId = async () => {
     try {
-      await navigator.clipboard.writeText(`${
-        uniqueUserName.split("-")[0]
-      } is invited you to join MS Editor Code room click this link : ${
-        process.env.REACT_APP_CLIENT_URL
-      } and type your 
-      name and paste this room ID :  ${roomId}`);
+      await navigator.clipboard.writeText(
+        `${
+          uniqueUserName.split("-")[0]
+        } is invited you to join MS Editor Code room click this link : ${
+          process.env.REACT_APP_CLIENT_URL
+        }/${roomId}`
+      );
       toast.success("room ID copied");
     } catch (err: any) {
       console.log("room id not copied : ", err);
       toast.error("room id not copied try again later");
     }
   };
+  async function onCompiledCodes(isGuest: boolean) {
+    setLoading(true);
+    let myCodeData: string = myCode || codeRef.current;
+    await compileCodeService(myCodeData, myLang.compilerId, setResult);
+    setLoading(false);
+    setOpenModal(true);
+    if (isGuest) {
+      socketRef.current.emit(SOCKET_ACTIONS.COMPILE_REQ, {
+        roomId,
+        _userName: uniqueUserName,
+      });
+    }
+  }
 
   if (!roomId || !userName) return <Navigate to="/" />;
 
   return (
     <div className="w-full h-full  min-h-screen min-w-screen flex  relative  ">
+      {!!result && (
+        <CompilerModal open={openModal} setOpen={setOpenModal}>
+          {!!result.Errors && (
+            <div className="py-2 px-4 overflow-y-auto rounded-md bg-[rgba(255,0,0,0.3)] w-full my-2 text-red-700 flex flex-col justify-center items-center">
+              <p className="text-2xl font-extrabold my-2">Error Occured</p>
+              <p>
+                <span className="mr-5 font-bold">Result : </span>{" "}
+                {result.Errors}
+              </p>
+            </div>
+          )}
+          {!!result.Result && (
+            <div className="py-2 px-4 overflow-y-auto rounded-md bg-[rgba(0,255,0,0.3)] w-full my-2 text-green-700 flex flex-col justify-center items-center">
+              <p className="text-2xl font-extrabold my-2">
+                Compiled Successfully
+              </p>
+              <p>
+                <span className="mr-5 font-bold">Result : </span>{" "}
+                {result.Result}
+              </p>
+            </div>
+          )}
+        </CompilerModal>
+      )}
+
       <EditorSideBar
         isMobileView={isMobileView}
         showSlides={showSlides}
@@ -238,6 +276,8 @@ const EditorsPage = () => {
           setMyCode={(value: string) => onChangeMyCode(value, saveCodeToRef)}
           myTheme={myTheme}
           setMyTheme={setMyTheme}
+          compileFunc={onCompiledCodes}
+          isLoading={loading}
         />
       </div>
     </div>
