@@ -121,7 +121,6 @@ const EditorsPage = () => {
               isMe: uniqueUserName === _client.userName,
             }))
           );
-          console.log("clients data : ", clients);
         }
       );
       socketRef.current.on(
