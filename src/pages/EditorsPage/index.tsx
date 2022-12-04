@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import { IClients } from "../../interfaces/socket.interface";
 import CompilerModal from "../../components/CompilerModal";
 import { ICompilerResult } from "../../interfaces/compilerResult.interface";
+import { stringify } from "querystring";
 const EditorsPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<ICompilerResult>();
@@ -71,7 +72,6 @@ const EditorsPage = () => {
 
   useEffect(() => {
     const hadleErrors = (err: any) => {
-      console.log("connection failed : ", err);
       toast.error("connection failed try again later");
       navigate("/");
     };
@@ -82,14 +82,45 @@ const EditorsPage = () => {
       });
       socketRef.current.on(
         SOCKET_ACTIONS.SERVER_UP,
-        ({ message }: { message: string }) => {
-          console.log("socket_message : ", message);
-        }
+        ({ message }: { message: string }) => {}
       );
       socketRef.current.emit(SOCKET_ACTIONS.JOIN, {
         roomId,
         userName: uniqueUserName,
       });
+      socketRef.current.on(
+        SOCKET_ACTIONS.DISCONNECTED,
+        ({
+          socketId,
+          _userName,
+          clientsData,
+          userName,
+        }: {
+          socketId: string;
+          _userName: string;
+          userName: string;
+          clientsData: IClients[];
+        }) => {
+          const filterClients = clientsData
+            .filter(
+              (fSelf: { userName: string; socketId: string }) =>
+                fSelf.userName !== _userName
+            )
+            .map((self: { userName: string; socketId: string }) => ({
+              ...self,
+              isMe: self.userName === uniqueUserName,
+            }));
+          setClientsData(filterClients);
+
+          // const filterClients = clientsData.filter(
+          //   (self: IClients) => self.socketId !== socketId
+          // );
+
+          // setClientsData(filterClients);
+          toast.error(`${userName} is removed`);
+        }
+      );
+
       socketRef.current.on("connection_failed", (err: any) => hadleErrors(err));
       socketRef.current.on(
         SOCKET_ACTIONS.JOINED,
@@ -164,9 +195,22 @@ const EditorsPage = () => {
     };
     setSocket();
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+      socketRef.current.emit(SOCKET_ACTIONS.LEAVE, {
+        roomId,
+        _userName: uniqueUserName,
+        userName: userName,
+      });
+    });
+  }, []);
   const saveCodeToRef = (myCode: string) => {
     codeRef.current = myCode;
   };
+
   const onChangeMyCode = async (value: string, cb: any) => {
     setMyCode(value);
     socketRef.current.emit(SOCKET_ACTIONS.SYNC_CODE, {
@@ -197,7 +241,6 @@ const EditorsPage = () => {
       );
       toast.success("room ID copied");
     } catch (err: any) {
-      console.log("room id not copied : ", err);
       toast.error("room id not copied try again later");
     }
   };
@@ -214,6 +257,23 @@ const EditorsPage = () => {
       });
     }
   }
+
+  // useEffect(() => {
+  //   window.addEventListener("beforeunload", (e) => {
+  //     e.preventDefault();
+  //     e.returnValue = "";
+  //     const myData: IClients | undefined = clientsData.find(
+  //       (self: IClients) => self.isMe === true
+  //     );
+  //     if (myData) {
+  //
+  //       socketRef.current.emit(
+  //         "client_removed",
+  //         JSON.stringify({ connectedScoketId: myData.socketId })
+  //       );
+  //     }
+  // //   });
+  // }, []);
 
   if (!roomId || !userName) return <Navigate to="/" />;
 
