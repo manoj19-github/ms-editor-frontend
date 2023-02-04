@@ -261,7 +261,7 @@ const EditorsPage = () => {
       roomId,
     });
   };
-  // copy the room id
+  // copy the room id and then changed
   const copyRoomId = async () => {
     try {
       await navigator.clipboard.writeText(
