@@ -277,24 +277,28 @@ const EditorsPage = () => {
     }
   };
 
-  const onCompiledCodes = useCallback(async function CompiledCodes(
-    isGuest: boolean
-  ) {
-    setLoading(true);
-    console.log("compile id : ", myLang);
-    console.log("lang ref :", langRef);
-    let myCodeData: string = myCode || codeRef.current;
-    await compileCodeService(myCodeData, langRef.current.compilerId, setResult);
-    setLoading(false);
-    setOpenModal(true);
-    if (isGuest) {
-      socketRef.current.emit(SOCKET_ACTIONS.COMPILE_REQ, {
-        roomId,
-        _userName: uniqueUserName,
-      });
-    }
-  },
-  []);
+  const onCompiledCodes = useCallback(
+    async function CompiledCodes(isGuest: boolean) {
+      setLoading(true);
+      console.log("compile id : ", myLang);
+      console.log("lang ref :", langRef);
+      let myCodeData: string = myCode || codeRef.current;
+      await compileCodeService(
+        myCodeData,
+        langRef.current.compilerId,
+        setResult
+      );
+      setLoading(false);
+      setOpenModal(true);
+      if (isGuest) {
+        socketRef.current.emit(SOCKET_ACTIONS.COMPILE_REQ, {
+          roomId,
+          _userName: uniqueUserName,
+        });
+      }
+    },
+    [uniqueUserName]
+  );
 
   // useEffect(() => {
   //   window.addEventListener("beforeunload", (e) => {
