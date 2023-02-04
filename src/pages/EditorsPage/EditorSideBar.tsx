@@ -17,6 +17,10 @@ const EditorSideBar = ({
   copyRoomId,
 }: IEditorSidebar) => {
   const navigate = useNavigate();
+  const removeFromRoom = () => {
+    removeMySocket();
+    window.close();
+  };
   return (
     <div
       className={`flex flex-col md:w-1/6 w-1/2 duration-500 ease-in-out  fixed h-screen z-[500] ${
@@ -49,16 +53,16 @@ const EditorSideBar = ({
         <div className="w-full mt-[25%] md:mt-4 md:p-2 flex md:flex-col md:space-y-5 items-center justify-around md:justify-center ">
           <button
             onClick={copyRoomId}
-            className="bg-slate-400 w-10 md:w-[90%] flex justify-center p-1  hover:bg-slate-700 h-7 items-center md:h-8  rounded-md text-white font-bold duration-500 ease-in  "
+            className="bg-slate-400 w-10 md:w-[90%] flex justify-center p-1 mt-6  hover:bg-slate-700 h-7 items-center md:h-8  rounded-md text-white font-bold duration-500 ease-in  "
           >
             {isMobileView ? <BiCopyAlt /> : "Copy Room ID"}
           </button>
-          <button
-            onClick={() => (removeMySocket(), navigate("/"))}
+          {/* <button
+            onClick={removeFromRoom}
             className="hover:bg-slate-400 w-10 md:w-[90%] bg-slate-700 flex justify-center items-center h-7 md:h-8 p-1  rounded-md text-white font-bold duration-500 ease-in  "
           >
             {isMobileView ? <MdPersonRemoveAlt1 /> : "Leave Room"}
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

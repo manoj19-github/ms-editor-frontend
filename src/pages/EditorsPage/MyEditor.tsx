@@ -50,6 +50,13 @@ const MyEditor = ({
   const handleEditorChange = (value: any) => {
     setMyCode(value);
   };
+  const handlecodeCompile = async () => {
+    try {
+      await compileFunc(true);
+    } catch (err: any) {
+      console.log(`compile error : ${err}`);
+    }
+  };
   return (
     <div className="overlay  w-full h-full shadow-4xl  bg-slate-900">
       <Editor
@@ -75,7 +82,7 @@ const MyEditor = ({
         </div>
 
         <button
-          onClick={() => compileFunc(true)}
+          onClick={handlecodeCompile}
           className="bg-red-400 hover:bg-[#475569]  duration-300 ease-in text-white  px-2 rounded-md w-[25%]  h-10 flex justify-center items-center"
         >
           {isLoading ? <BtnLoader /> : `Run`}

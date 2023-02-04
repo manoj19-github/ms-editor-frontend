@@ -38,7 +38,11 @@ const LoginPage = () => {
       </h3>
       <div className="md:h-2/3 md:w-1/3 h-[80%] w-[90%] bg-[#131413] rounded-md flex flex-col items-center gap-y-3 shadow-xl  ">
         <div>
-          <img src="/site-logo.png" className="md:w-[7rem] w-[5rem] my-2" />
+          <img
+            src="/site-logo.png"
+            className="md:w-[7rem] w-[5rem] my-2"
+            alt="site-logo"
+          />
         </div>
         <form className="my-2 flex flex-col space-y-4 w-[90%] md:w-2/3 text-slate-400 ">
           <div className="flex flex-col space-y-2 justify-start items-start">

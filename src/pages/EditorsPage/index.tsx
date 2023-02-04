@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BiCopyAlt } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
 import { MdPersonRemoveAlt1 } from "react-icons/md";
@@ -46,6 +46,7 @@ const EditorsPage = () => {
   const langRef = useRef<ILangOption>(myLang);
 
   const { roomId, userName } = useParams();
+  const params = useParams();
   const removeSocket = () => {
     socketRef.current.off(SOCKET_ACTIONS.JOINED);
     socketRef.current.disconnect();
@@ -101,6 +102,8 @@ const EditorsPage = () => {
           userName: string;
           clientsData: IClients[];
         }) => {
+          console.log("client data in disconnection ", _userName, userName);
+          console.log("all connections : ", clientsData);
           const filterClients = clientsData
             .filter(
               (fSelf: { userName: string; socketId: string }) =>
@@ -178,17 +181,45 @@ const EditorsPage = () => {
         }) => {
           if (_userName !== uniqueUserName) {
             toast.success(`Language changed by ${_userName.split("-")[0]}`);
+            console.log({ newLang });
             setMyLang(newLang);
+            console.log("mylang :", myLang);
             langRef.current = newLang;
+            console.log("lang ref : ", langRef);
           }
         }
       );
       socketRef.current.on(
         SOCKET_ACTIONS.COMPILING,
-        ({ _userName }: { _userName: string }) => {
-          if (_userName !== uniqueUserName) {
-            toast.success(`code compiling by ${_userName.split("-")[0]}`);
-            onCompiledCodes(false);
+        async ({ _userName }: { _userName: string }) => {
+          try {
+            if (_userName !== uniqueUserName) {
+              toast.success(`code compiling by ${_userName.split("-")[0]}`);
+              await onCompiledCodes(false);
+            }
+          } catch (err: any) {
+            toast.error(`something went wrong`);
+            console.log(`error occured : `, err);
+          }
+        }
+      );
+      socketRef.current.on(
+        SOCKET_ACTIONS.LEAVE,
+        ({
+          roomId,
+          _userName,
+          userName,
+        }: {
+          roomId: string;
+          _userName: string;
+          userName: string;
+        }) => {
+          console.log("leave on hit");
+          if (uniqueUserName !== _userName) {
+            console.log("leave on hit 2");
+            setClientsData((prev: IClients[]) =>
+              prev.filter((self) => self.userName !== uniqueUserName)
+            );
           }
         }
       );
@@ -201,7 +232,7 @@ const EditorsPage = () => {
       e.preventDefault();
       e.returnValue = "";
       socketRef.current.emit(SOCKET_ACTIONS.LEAVE, {
-        roomId,
+        roomId: params.roomId,
         _userName: uniqueUserName,
         userName: userName,
       });
@@ -222,6 +253,7 @@ const EditorsPage = () => {
   };
   const onLangChange = (newLang: ILangOption) => {
     setMyLang(newLang);
+    console.log("new lang on lang change : ", newLang);
     langRef.current = newLang;
     socketRef.current.emit(SOCKET_ACTIONS.LANG_CHANGING, {
       newLang,
@@ -244,10 +276,15 @@ const EditorsPage = () => {
       toast.error("room id not copied try again later");
     }
   };
-  async function onCompiledCodes(isGuest: boolean) {
+
+  const onCompiledCodes = useCallback(async function CompiledCodes(
+    isGuest: boolean
+  ) {
     setLoading(true);
+    console.log("compile id : ", myLang);
+    console.log("lang ref :", langRef);
     let myCodeData: string = myCode || codeRef.current;
-    await compileCodeService(myCodeData, myLang.compilerId, setResult);
+    await compileCodeService(myCodeData, langRef.current.compilerId, setResult);
     setLoading(false);
     setOpenModal(true);
     if (isGuest) {
@@ -256,7 +293,8 @@ const EditorsPage = () => {
         _userName: uniqueUserName,
       });
     }
-  }
+  },
+  []);
 
   // useEffect(() => {
   //   window.addEventListener("beforeunload", (e) => {
